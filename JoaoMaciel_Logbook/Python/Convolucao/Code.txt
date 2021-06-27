@@ -1,0 +1,36 @@
+def FullConv(Data):
+    """
+    -input
+    Data: a (2;N) array Data[0] must be the x, Data[0] must be the y
+
+    -output
+    Conv_X, Conv
+    """
+    sigma= 3.38
+    def Gauss(x):
+        return np.exp(-(x/sigma)**2/2)/(sigma*np.sqrt(2*np.pi))
+
+    L= Data[0][-1]-Data[0][0] 
+    N= 10* int(L)
+    X= np.linspace(Data[0][0], Data[0][-1], N  )
+    Y= np.zeros(N)
+    dX= L/(N-1)
+
+    # Creating a map from the original spectral lines list to the new linear one
+    ind= np.array((Data[0]-Data[0][0])/dX, dtype=int)
+
+    for i in range(len(Data[0])):
+        Y[ind[i]]= Data[1][i]
+
+    # Generating the gaussian (normalized) with a grid with width dX
+    # When x = 9*sig the gaussian is ~0 (2.5E-18, the machine limit)
+    # We use sig= 3.38 +- 0.08 (determined from the spectrometer data)
+    sigma= 3.38
+
+    X_Gauss= np.arange(-9*sigma,9*sigma+dX,dX)
+    Y_Gauss= Gauss( X_Gauss, sigma )
+
+    Conv = np.convolve(Y, Y_Gauss, mode="full")
+    Conv_X= (np.arange(len(Conv))- int(len(X_Gauss)/2))*dX + Data[0][0]
+
+    return Conv_X, Conv
